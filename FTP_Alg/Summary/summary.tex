@@ -1,0 +1,21 @@
+\documentclass[12pt]{article}
+\begin{document}
+\section*{Calculating running times}
+If not sure how many iterations are made, choose a $n = k$ or $n = 2^k$ and mathematically calculate running time.
+\subsection*{Important formulas for induction}
+$(1+2^1+\dots+2^{k-2}+2^{k-1}) = 2^k-1$\\
+$(1+2+\dots+(n-1)+n) = \frac{n(n+1)}{2}$\\
+\subsection*{Induction}
+If we have calculated a running time like:\\
+$T(n)=k*T(\frac{n}{k})+c*n$\\
+We can use $n=k^m | m=log_kn$ and get:\\
+$T(k^m)=k*T(k^{m-1})+c*k^m$\\
+Now we can calculate $T()$ for $m=0,1,2,3,\dots$\\
+(1) $T(k)=k*T(1)+k*c=k(T(1)+c)$\\
+In the next step we can replace $T(k)$ with $k(T(1)+c)$\\
+$T(k^2)=k*T(k)+k^2*c=k^2(T(1)+2c)$ using (1)\\
+\dots\\
+$T(k^m)=k^m(T(1)+m*c)$\\
+Now we use $n=k^m | m=log_kn$ again and get:\\
+$T(n)=n(T(1)+log_kn*c) = O(nlog_n)$
+\end{document}
