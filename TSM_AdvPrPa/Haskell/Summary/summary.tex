@@ -1,0 +1,237 @@
+\documentclass[12pt]{article}
+\usepackage{minted}
+\begin{document}
+\section*{Haskell}
+\subsection*{GHCI commands}
+\begin{minted}{haskell}
+:load <name>
+:reload
+:set editor <name>
+:edit <name>
+:type <expr>
+:? --show all commands
+:quit
+:set +t --outputs type information for everything
+\end{minted}
+
+\subsection*{Function definitions}
+f a b + c * b means f(a,b) + c*b\\
+function has higher priority then operators! f a + b means f(a) + b and not f(a+b)!\\
+f (g x) means f(g(x))\\
+f x y == x `f` y (Only with back quotes)\\
+mult x y z means ((mult x)y)z when curried (Orther of function generation)\\
+use parenthesis to transform 1 + 1 = (+) 1 1 or even (1+) 1 = (+1) 1 these are called "sections"\\
+
+\subsection*{Writing functions}
+functions start with a lower-case letter\\
+list arguments have an s suffix for example xs, ns or others\\
+In a sequence of definitions, each definition must begin in precisely the same column\\
+\begin{minted}{haskell}
+a = b + c
+    where
+      b = 1
+      c = 2
+--means
+a = b + c where {b = 1;c = 2}
+\end{minted}
+a function is polymorphic if its type contains one or more type variables 
+\begin{minted}{haskell}
+length :: [a] -> Int
+\end{minted}
+a function is overloaded if its type contains one or more class constraints 
+\begin{minted}{haskell}
+(+) :: Num a => a -> a -> a
+\end{minted}
+
+\subsubsection*{Conditional Expression}
+\begin{minted}{haskell}
+signum n = if n < 0 then -1 else 
+    if n == 0 then 0 else 1
+\end{minted}
+
+\subsubsection*{Guareded equations}
+\begin{minted}{haskell}
+signum n | n < 0     = -1
+         | n == 0    = 0
+         | otherwise = 1
+\end{minted}
+
+\subsubsection*{Pattern matching}
+\begin{minted}{haskell}
+True  && b = b
+False && _ = False
+--x:xs pattern:
+head (x:_) = x --You MUST use parenthesis here
+\end{minted}
+
+\subsubsection*{Where clause}
+\begin{minted}{haskell}
+odds n = map f [0..n-1]
+    where
+        f x = x*2 + 1
+\end{minted}
+
+\subsubsection*{Lambdas}
+\begin{minted}{haskell}
+odds n = map (\x = x*2 + 1) [0..n-1]
+\end{minted}
+
+\subsubsection*{List comprehensions}
+List comprehensions use generators (A generator is a list or a function returning a list)
+\begin{minted}{haskell}
+[(x,y) | x <- [1..3], y <- [x..3]] --[(1,1),(1,2),(1,3),(2,2),(2,3),(3,3)]
+concat xss = [x | xs <- xss, x <- xs] -- xss is a list of lists
+allPositiveInt = [0..] --generator without upper bound
+--list comprehensions can use guards
+[x | x < [1..10], even x]
+factors n = [x | x <- [1..n], n `mod` x == 0] --returns all factors of a number
+\end{minted}
+
+\subsubsection*{Recursive functions}
+\begin{minted}{haskell}
+fac 0 = 1
+fac n = n * fac (n-1)
+
+length [] = 0
+length (_:xs) = 1 + length xs 
+--_ is used as the value of the element is not required
+
+(++) :: [a] -> [a] -> [a]
+[] ++ ys = ys
+(x:xs) ++ ys = x : (xs ++ ys)
+
+qsort :: Ord a => [a] -> [a]
+qsort [] = []
+qsort (x:xs) =
+  qsort smaller ++ [x] qsort larger
+  where
+    smaller = [a | a <- xs, a <= x]
+    larger = [b | b <- xs, b > x]
+\end{minted}
+
+\subsubsection*{Higher order functions}
+Higher order functions are function with functions as argument or which return a function
+\begin{minted}{haskell}
+--foldr is a very important higher order function
+--A number of functions on lists can be defined 
+--using the following simple pattern of recursion:
+f [] = value
+f (x:xs) = x § f xs
+--f maps the empty list to some value v,
+--and any non-empty list to some function §
+--applied to its head and f of its tail.
+
+foldr :: Foldable t => (a -> b -> b) -> b -> t a -> b
+foldr f v [] = v
+foldr f v (x:xs) = f x (foldr f v xs)  
+--foldr does just that applying the function recursively
+
+reverse = foldr (\x xs -> xs ++ [x]) []
+
+foldl :: Foldable t => (b -> a -> b) -> b -> t a -> b
+--It takes the second argument and the first item of the list 
+--and applies the function to them, 
+--then feeds the function with this result and the second argument and so on. 
+\end{minted}
+
+
+
+
+\subsection*{Type declarations}
+define types using existing types
+\begin{minted}{haskell}
+type String = [Char]
+type Pos = (Int,Int)
+type Trans = Pos -> Pos
+type Tree = (Int,[Tree]) --!!!this will not work as it is recursive!!!
+type Pair a = (a,a) --With type parameter. 
+--Then we can define mult :: Pair Int -> Int
+\end{minted}
+
+
+
+\subsection*{Data declarations}
+define completely new types with specific values
+\begin{minted}{haskell}
+data Bool = False | True --The values False/True are called "contructors"
+data Nat = Zero | Succ Nat --recursive is allowed when creating new types
+data Expr = Val Int 
+          | Add Expr Expr --We can use recursion here
+          | Mul Expr Expr
+
+data Shape = Circle Float
+           | Rect Float Float --Data declerations can have parameters as well
+--Circle and Rect can be viewed as functions that contruct values of type Shape
+Circle :: Float -> Shape
+Rect :: Float -> Float -> Shape
+--Now we can define
+area :: Shape -> Float
+area (Circle r) = pi * r^2
+area (Rect x y) = x * y
+--data declarations can also have parameters just like types
+data Maybe a = Nothing | Just a
+--Now we can define
+safediv :: Int -> Int -> Maybe Int
+safediv _ 0 = Nothing
+safediv m n = Just (m `div` n)
+\end{minted}
+
+
+
+\subsection*{Lists and strings}
+\begin{minted}{haskell}
+(!!) :: [a] -> Int -> a --Returns element at nth position. Ex: [3,4,5] !! 2 == 4
+(++) :: [a] -> [a] -> [a] --append
+(:) :: a -> [a] -> [a] --called "cons" adds an element to the start of a list
+head :: [a] -> a
+last :: [a] -> a
+tail :: [a] -> [a]
+take :: Int -> [a] -> [a] --Get first n elements
+drop :: Int -> [a] -> [a] --Get list without first n elements
+length :: Foldable t => t a -> Int
+sum_product :: (Foldable t, Num a) => t a -> a
+reverse :: [a] -> [a]
+init :: [a] -> a --Removes the last element
+zip :: [a] -> [b] -> [(a,b)] --pair element of [a] with the corresponding of [b]
+fst :: (a,b) -> a --return the first element of a tuple of type (a,b)
+null :: Foldable t => t a -> Bool --returns true if the list is empty
+concat :: [[a]] -> [a]
+replicate :: Int -> a -> [a] --creates a list with n identical elements
+elem :: (Foldable t, Eq a) => a -> t a -> Bool --Basically "contains" 
+map :: (a -> b) -> [a] -> [b]
+\end{minted}
+
+
+\subsection*{Important functions}
+\begin{minted}{haskell}
+(+)_(-)_(*) :: Num a => a -> a -> a
+(/) :: Fractional a => a -> a -> a
+div_mod :: Integral a => a -> a -> a
+(==)_(/=) :: Eq a => a -> a -> Bool
+(<)_(>)_(>=)_(<=) :: Ord a => a -> a -> Bool --Ord includes Eq
+(.) :: (b -> c) -> (a -> b) -> (a -> c) --composition of 2 functions
+abs :: Num a => a -> a
+even_odd :: Integral a => a -> Bool
+and_or :: Foldable t => t Bool -> Bool
+filter :: (a -> Bool) -> [a] -> [a]
+all_any :: Foldable t => (a -> Bool) -> t a -> Bool --Do all satisfy a predicate
+takeWhile_dropWhile :: (a -> Bool) -> [a] -> [a] --Take elements until false
+\end{minted}
+
+\subsection*{Types}
+Applying a function to one or more arguments of the wrong type is called a type error.\\
+If evaluating an expression e would produce a value of type t, then e has type t, written
+\begin{minted}{haskell}
+e :: t
+\end{minted}
+Every well formed expression has a type, which can be automatically calculated at compile time using a process called type inference.\\
+All type errors are found at compile time, which makes programs safer and faster by removing the need for type checks at run time.\\
+Basic types: Bool, Char, String, Int, Float\\
+A tuple is a sequence of values of different types
+\begin{minted}{haskell}
+(False,'a',True) :: (Bool,Char,Bool)
+\end{minted}
+A function is a mapping from values of one type to values of another type\\
+Functions are curried by default, meaning they return another function if more then 1 argument is given\\
+
+\end{document}
