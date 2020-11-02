@@ -1,0 +1,20 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+\graphicspath{ {./img/} }
+\begin{document}
+\section*{Multiple inheritance}
+\subsection*{Problems}
+\subsubsection*{Duplicated method / field}
+If 2 superclasses / interfaces define the same method / field, which is invoked and how.
+
+This is handled differently in Java / C# and C++.
+\subsubsection*{Diamond inheritance problem}
+What if 2 superclasses have the same baseclass. (forming a diamond)
+
+Do all superclasses get their own copy of fields and methods?
+
+For example in C++ for all superclasses a separate method and field is added. They can be accessed by casting the class to one of its superclasses.
+Directly accessing such a method / field on the class itself will throw an exception as it is unclear which one to use.
+
+If this is not wanted, virtual inheritance can be used, creating the field only once,
+\end{document}
